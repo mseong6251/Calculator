@@ -6,3 +6,8 @@ jobs:
       - image: cimg/base:current
     steps:
       - run: echo "Say hello to Yaml!"
+  job2:
+    docker:
+      - image: cimg/base:current
+    steps:
+      - run: echo "This is job 2!"
