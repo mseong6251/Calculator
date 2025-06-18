@@ -11,3 +11,10 @@ jobs:
       - image: cimg/base:current
     steps:
       - run: echo "This is job 2!!"
+
+workflows:
+  workflow1:
+    jobs:
+      - build
+      - job2
+    
