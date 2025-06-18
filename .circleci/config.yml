@@ -5,4 +5,4 @@ jobs:
     docker:
       - image: cimg/base:current
     steps:
-      - run: echo "Say hello to Yaml"
+      - run: echo "Say hello to Yaml!"
