@@ -124,7 +124,8 @@ workflows:
     when: << pipeline.parameters.test-conditional >>
     jobs:
       - test
-
        #when else can we set it true/false other than triggering manually or via API?
+#Testing...
+# Are filters with workflows overriding the trigger settings set at a project level?
 
     
