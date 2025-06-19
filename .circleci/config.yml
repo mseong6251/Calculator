@@ -48,7 +48,6 @@ jobs:
     steps:
       - run: echo "Rolling back!"
 
-
 workflows:
   workflow1:
     jobs:
@@ -63,6 +62,7 @@ workflows:
           requires:
             - test
       - push-and-deploy:
+          type: approval
           requires:
             - build-app1
             - build-app2
@@ -70,7 +70,4 @@ workflows:
       - rollback:
           requires:
             - push-and-deploy:
-              - failed
-              
-
-        
+                - failed
