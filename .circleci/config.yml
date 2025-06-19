@@ -4,6 +4,9 @@ parameters:
   image-tag:
     type: string
     default: "current"
+  test-conditional:
+    type: boolean
+    default: true
 
 jobs:
   test:
@@ -85,6 +88,16 @@ workflows:
             - push-and-deploy:
                 - failed
 
+  #  scheduledworkflow:
+  #   triggers:
+  #     - schedule:
+  #         cron: "*/5 * * * *"
+  #         filters:
+  #           branches:
+  #             only:
+  #               - main
+  # why was this not working?
+  
   scheduled-workflow:
     triggers:
       - schedule:
@@ -92,6 +105,7 @@ workflows:
           filters:
             branches:
               only: main
+              # not running hourly??
     jobs:
       - test:
           context:
@@ -105,3 +119,12 @@ workflows:
       - build-app3:
           requires:
             - test
+
+  test-conditional:
+    when: << pipeline.parameters.test-conditional >>
+    jobs:
+      - test
+
+       #when else can we set it true/false other than triggering manually or via API?
+
+    
