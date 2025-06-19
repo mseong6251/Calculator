@@ -1,20 +1,61 @@
 version: 2.1
 
+parameters:
+  image-tag:
+    type: string
+    default: "current"
+
 jobs:
-  build:
+  test:
+    docker:
+      - image: cimg/base:<< pipeline.parameters.image-tag >>
+    steps:
+      - run: echo "Lint checking!"
+      - run: echo "Running unit tests!"
+      - run: echo "Running integration tests!"
+
+  build-app1:
     docker:
       - image: cimg/base:current
     steps:
-      - run: echo "Say hello to Yaml!"
-  job2:
+      - run: echo "Building App 1!"
+
+  build-app2:
     docker:
       - image: cimg/base:current
     steps:
-      - run: echo "This is job 2!!"
+      - run: echo "Building App 2!"
+
+  build-app3:
+    docker:
+      - image: cimg/base:current
+    steps:
+      - run: echo "Building App 3!"
+
+  push-and-deploy:
+    docker:
+      - image: cimg/base:current
+    steps:
+      - run: echo "Log in to Docker!"
+      - run: echo "Pushing to Docker!"
+      - run: echo "Login to AWS!"
+      - run: echo "Deploy to AWS!"
 
 workflows:
   workflow1:
     jobs:
-      - build
-      - job2
-    
+      - test
+      - build-app1:
+          requires:
+            - test
+      - build-app2:
+          requires:
+            - test
+      - build-app3:
+          requires:
+            - test
+      - push-and-deploy:
+          requires:
+            - build-app1
+            - build-app2
+            - build-app3
