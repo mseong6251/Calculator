@@ -122,6 +122,10 @@ workflows:
 
   test-conditional:
     when: << pipeline.parameters.test-conditional >>
+    filters:  
+            branches:
+              only:  
+                - dev
     jobs:
       - test
        #when else can we set it true/false other than triggering manually or via API?
