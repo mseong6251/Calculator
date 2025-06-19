@@ -75,7 +75,7 @@ workflows:
   scheduledworkflow:
     triggers:
       - schedule:
-          cron: "*/5 * * * *"
+          cron: "* * * * *"
           filters:
             branches:
               only:
