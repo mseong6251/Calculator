@@ -71,3 +71,15 @@ workflows:
           requires:
             - push-and-deploy:
                 - failed
+
+  scheduledworkflow:
+    triggers:
+      - schedule:
+          cron: "*/5 * * * *"
+          filters:
+            branches:
+              only:
+                - main
+    jobs:
+      - test
+    
