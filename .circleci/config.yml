@@ -13,6 +13,7 @@ jobs:
       - run: echo "Lint checking!"
       - run: echo "Running unit tests!"
       - run: echo "Running integration tests!"
+      - run: echo "${variable1} - context"
 
   build-app1:
     docker:
@@ -51,7 +52,51 @@ jobs:
 workflows:
   workflow1:
     jobs:
-      - test
+      - test:
+          context: 
+            - variable
+      - build-app1:
+          context:
+            - variable
+          requires:
+            - test
+      - build-app2:
+          context:
+            - variable
+          requires:
+            - test
+      - build-app3:
+          context:
+            - variable
+          requires:
+            - test
+      - push-and-deploy:
+          type: approval
+          context:
+            - variable
+          requires:
+            - build-app1
+            - build-app2
+            - build-app3
+      - rollback:
+          context:
+            - variable
+          requires:
+            - push-and-deploy:
+                - failed
+
+  scheduledworkflow:
+    triggers:
+      - schedule:
+          cron: "*/5 * * * *"
+          filters:
+            branches:
+              only:
+                - main
+    jobs:
+      - test:
+          context:
+            - variable
       - build-app1:
           requires:
             - test
@@ -61,25 +106,3 @@ workflows:
       - build-app3:
           requires:
             - test
-      - push-and-deploy:
-          type: approval
-          requires:
-            - build-app1
-            - build-app2
-            - build-app3
-      - rollback:
-          requires:
-            - push-and-deploy:
-                - failed
-
-  scheduledworkflow:
-    triggers:
-      - schedule:
-          cron: "* * * * *"
-          filters:
-            branches:
-              only:
-                - main
-    jobs:
-      - test
-    
