@@ -40,6 +40,14 @@ jobs:
       - run: echo "Pushing to Docker!"
       - run: echo "Login to AWS!"
       - run: echo "Deploy to AWS!"
+      - run: exit 1
+
+  rollback:
+    docker:
+      - image: cimg/base:current
+    steps:
+      - run: echo "Rolling back!"
+
 
 workflows:
   workflow1:
@@ -59,3 +67,10 @@ workflows:
             - build-app1
             - build-app2
             - build-app3
+      - rollback:
+          requires:
+            - push-and-deploy:
+              - failed
+              - canceled
+
+        
