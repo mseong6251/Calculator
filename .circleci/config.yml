@@ -18,6 +18,12 @@ jobs:
       - run: echo "Running integration tests!"
       - run: echo "${variable1} - context"
 
+  test2:
+    docker:
+      - image: cimg/base:<< pipeline.parameters.image-tag >>
+    steps:
+      - run: echo "Test 2"
+
   build-app1:
     docker:
       - image: cimg/base:current
@@ -124,7 +130,7 @@ workflows:
   test-conditional:
     when: << pipeline.parameters.test-conditional >>
     jobs:
-      - test:
+      - test2:
           filters:  
             branches:
               only:  
@@ -132,3 +138,6 @@ workflows:
        #when else can we set it true/false other than triggering manually or via API?
 #Testing...
 # Are filters with workflows overriding the trigger settings set at a project level?
+# pushing to dev is not triggering the workflow..? Filter not working..? This is because of dynamic configuration
+#how to know what paths to use for workspaces?
+# better explanation of layering, what it does and its benefits?
