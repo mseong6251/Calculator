@@ -18,12 +18,6 @@ jobs:
       - run: echo "Running integration tests!"
       - run: echo "${variable1} - context"
 
-  test2:
-    docker:
-      - image: cimg/base:<< pipeline.parameters.image-tag >>
-    steps:
-      - run: echo "Test 2"
-
   build-app1:
     docker:
       - image: cimg/base:current
@@ -130,7 +124,7 @@ workflows:
   test-conditional:
     when: << pipeline.parameters.test-conditional >>
     jobs:
-      - test2:
+      - test:
           filters:  
             branches:
               only:  
