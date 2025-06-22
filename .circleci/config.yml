@@ -8,69 +8,77 @@ parameters:
     type: boolean
     default: true
 
-jobs:
-  test:
+executors:
+  my-executor:
     docker:
       - image: cimg/base:<< pipeline.parameters.image-tag >>
+    working_directory: /tmp
+
+jobs:
+  test:
+    executor: my-executor
     steps:
-      - run: echo "Lint checking!"
-      - run: echo "Running unit tests!"
-      - run: echo "Running integration tests!"
-      - run: echo "${variable1} - context"
+      - run: echo "Testing..."  # Fixed: use echo, not cat
 
   build-app1:
-    docker:
-      - image: cimg/base:current
+    executor: my-executor
     steps:
       - run: echo "Building App 1!"
+      - run: echo "App 1 Build Artifacts" > app1
+      - persist_to_workspace:
+          root: .              # Fixed: use current directory (/tmp)
+          paths:
+            - app1
 
   build-app2:
-    docker:
-      - image: cimg/base:current
+    executor: my-executor
     steps:
       - run: echo "Building App 2!"
+      - run: echo "App 2 Build Artifacts" > app2
+      - persist_to_workspace:
+          root: .              # Fixed: use current directory (/tmp)
+          paths:
+            - app2
 
   build-app3:
-    docker:
-      - image: cimg/base:current
+    executor: my-executor
     steps:
       - run: echo "Building App 3!"
+      - run: echo "App 3 Build Artifacts" > app3
+      - persist_to_workspace:
+          root: .              # Fixed: use current directory (/tmp)
+          paths:
+            - app3
 
   push-and-deploy:
-    docker:
-      - image: cimg/base:current
+    executor: my-executor
     steps:
-      - run: echo "Log in to Docker!"
+      - run: echo "Log in to Docker with this secret ${variable1}"
+      - attach_workspace: 
+          at: /tmp             # Restore to working directory
+      - run: cat /tmp/app1     # Fixed: add 'run:' prefix
+      - run: cat /tmp/app2     # Fixed: add 'run:' prefix
+      - run: cat /tmp/app3     # Fixed: add 'run:' prefix
       - run: echo "Pushing to Docker!"
-      - run: echo "Login to AWS!"
+      - run: echo "Login to AWS with secret ${variable1}"
       - run: echo "Deploy to AWS!"
-      # - run: exit 1
 
   rollback:
-    docker:
-      - image: cimg/base:current
+    executor: my-executor
     steps:
       - run: echo "Rolling back!"
 
 workflows:
   workflow1:
     jobs:
-      - test:
-          context: 
-            - variable
+      - test
       - build-app1:
-          context:
-            - variable
           requires:
             - test
       - build-app2:
-          context:
-            - variable
           requires:
             - test
       - build-app3:
-          context:
-            - variable
           requires:
             - test
       - push-and-deploy:
@@ -88,16 +96,6 @@ workflows:
             - push-and-deploy:
                 - failed
 
-  #  scheduledworkflow:
-  #   triggers:
-  #     - schedule:
-  #         cron: "*/5 * * * *"
-  #         filters:
-  #           branches:
-  #             only:
-  #               - main
-  # why was this not working?
-  
   scheduled-workflow:
     triggers:
       - schedule:
@@ -106,11 +104,8 @@ workflows:
             branches:
               only: 
                 - main
-              # not running hourly??
     jobs:
-      - test:
-          context:
-            - variable
+      - test
       - build-app1:
           requires:
             - test
@@ -129,9 +124,3 @@ workflows:
             branches:
               only:  
                 - dev
-                
-# Are filters with workflows overriding the trigger settings set at a project level?
-# pushing to dev is not triggering the workflow..? Filter not working..? This is because of dynamic configuration
-#how to know what paths to use for workspaces?
-# better explanation of layering, what it does and its benefits?
-#test skip ci
