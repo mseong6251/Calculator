@@ -129,7 +129,6 @@ workflows:
             branches:
               only:  
                 - dev
-       #when else can we set it true/false other than triggering manually or via API?
 #Testing...
 # Are filters with workflows overriding the trigger settings set at a project level?
 # pushing to dev is not triggering the workflow..? Filter not working..? This is because of dynamic configuration
