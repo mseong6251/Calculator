@@ -82,7 +82,7 @@ workflows:
           requires:
             - test
       - push-and-deploy:
-          type: approval
+          #type: approval
           context:
             - variable
           requires:
