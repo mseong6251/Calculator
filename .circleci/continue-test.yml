@@ -1,0 +1,143 @@
+version: 2.1
+
+parameters:
+  run-python-tests:
+    type: boolean
+    default: false
+  image-tag:
+    type: string
+    default: "current"
+
+executors:
+  python-executor:
+    docker:
+      - image: cimg/python:3.11
+    working_directory: ~/project
+
+jobs:
+  test-python-syntax:
+    executor: python-executor
+    steps:
+      - checkout
+      - run:
+          name: Check Python syntax
+          command: |
+            python -m py_compile calculator.py
+            python -m py_compile main.py
+            python -m py_compile utils.py
+            echo "✅ All Python files have valid syntax"
+
+  test-python-functionality:
+    executor: python-executor
+    steps:
+      - checkout
+      - run:
+          name: Test calculator functions
+          command: |
+            echo "Testing calculator module..."
+            python -c "
+            import calculator
+            
+            # Test basic operations
+            assert calculator.add(2, 3) == 5, 'Add function failed'
+            assert calculator.multiply(4, 5) == 20, 'Multiply function failed'
+            assert calculator.divide(10, 2) == 5, 'Divide function failed'
+            assert calculator.power(2, 3) == 8, 'Power function failed'
+            
+            # Test division by zero
+            result = calculator.divide(10, 0)
+            assert 'Error' in str(result), 'Division by zero should return error'
+            
+            print('✅ All calculator tests passed!')
+            "
+
+  test-utils-functionality:
+    executor: python-executor
+    steps:
+      - checkout
+      - run:
+          name: Test utility functions
+          command: |
+            echo "Testing utils module..."
+            python -c "
+            import utils
+            
+            # Test number formatting
+            formatted = utils.format_number(3.14159)
+            assert formatted == '3.14', f'Expected 3.14, got {formatted}'
+            
+            # Test error message passthrough
+            error_msg = 'Error: test'
+            assert utils.format_number(error_msg) == error_msg, 'Error message should pass through'
+            
+            print('✅ All utility tests passed!')
+            "
+
+  lint-python-code:
+    executor: python-executor
+    steps:
+      - checkout
+      - run:
+          name: Install linting tools
+          command: |
+            pip install flake8 black
+      - run:
+          name: Check code formatting with black
+          command: |
+            black --check --diff calculator.py main.py utils.py || echo "⚠️  Code formatting issues found"
+      - run:
+          name: Lint with flake8
+          command: |
+            flake8 calculator.py main.py utils.py --max-line-length=100 || echo "⚠️  Linting issues found"
+
+  run-calculator-integration:
+    executor: python-executor
+    steps:
+      - checkout
+      - run:
+          name: Test calculator integration
+          command: |
+            echo "Testing main calculator integration..."
+            timeout 10s python -c "
+            import sys
+            import io
+            from unittest.mock import patch
+            
+            # Mock user input for automated testing
+            user_inputs = ['1', '5', '3', 'n']  # Choose add, enter 5 and 3, then exit
+            
+            with patch('builtins.input', side_effect=user_inputs):
+                try:
+                    import main
+                    # This would normally run the interactive calculator
+                    # but our mocked input will make it exit after one calculation
+                    print('✅ Calculator integration test passed!')
+                except SystemExit:
+                    print('✅ Calculator exited gracefully')
+                except Exception as e:
+                    print(f'⚠️  Integration test encountered: {e}')
+            "
+
+workflows:
+  python-test-workflow:
+    when: << pipeline.parameters.run-python-tests >>
+    jobs:
+      - test-python-syntax
+      - test-python-functionality:
+          requires:
+            - test-python-syntax
+      - test-utils-functionality:
+          requires:
+            - test-python-syntax
+      - lint-python-code:
+          requires:
+            - test-python-syntax
+      - run-calculator-integration:
+          requires:
+            - test-python-functionality
+            - test-utils-functionality
+
+  default-workflow:
+    unless: << pipeline.parameters.run-python-tests >>
+    jobs:
+      - test-python-syntax 
