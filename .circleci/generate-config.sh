@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Get branch name and changed files for decision making
+# Get branch name and changed files for decision making.
 BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
 CHANGED_FILES=$(git diff --name-only HEAD~1 2>/dev/null || echo "")
 
