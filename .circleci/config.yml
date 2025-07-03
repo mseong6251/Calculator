@@ -40,7 +40,7 @@ jobs:
 workflows:
   setup-workflow:
     jobs:
-      - setup
+      #- setup
       - path-filtering/filter:
           base-revision: main
           mapping: |
