@@ -13,7 +13,7 @@ version: 2.1
 parameters:
   image-tag:
     type: string
-    default: "current"ha
+    default: "current"
   test-conditional:
     type: boolean
     default: true

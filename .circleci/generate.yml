@@ -96,8 +96,7 @@ workflows:
           context:
             - variable
           requires:
-            - push-and-deploy:
-                - failed
+            - push-and-deploy
 
   scheduled-workflow:
     triggers:
