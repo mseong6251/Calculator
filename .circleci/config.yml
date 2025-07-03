@@ -6,6 +6,7 @@ setup: true
 # Only need the continuation orb for this approach
 orbs:
   continuation: circleci/continuation@2.0.0
+  path-filtering: circleci/path-filtering@2.0.1
 
 # Keep your parameters - they'll be passed to the generated config
 parameters:
@@ -40,3 +41,9 @@ workflows:
   setup-workflow:
     jobs:
       - setup
+      - path-filtering/filter:
+          paths:
+            - .circleci/generate-config.sh
+            - .circleci/config.yml
+            - .circleci/generate-config.sh
+
