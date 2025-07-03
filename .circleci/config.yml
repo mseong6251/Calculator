@@ -41,9 +41,4 @@ workflows:
   setup-workflow:
     jobs:
       - setup
-      - path-filtering/filter:
-          paths:
-            - .circleci/generate-config.sh
-            - .circleci/config.yml
-            - .circleci/generate-config.sh
-
+        
