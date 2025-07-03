@@ -1,5 +1,13 @@
 version: 2.1
 
+# This marks it as a setup configuration for dynamic config
+setup: true
+
+# Only need the continuation orb for this approach
+orbs:
+  continuation: circleci/continuation@2.0.0
+
+# Keep your parameters - they'll be passed to the generated config
 parameters:
   image-tag:
     type: string
@@ -15,112 +23,20 @@ executors:
     working_directory: /tmp
 
 jobs:
-  test:
-    executor: my-executor
+  setup:
+    executor: continuation/default
     steps:
-      - run: echo "Testing..."  # Fixed: use echo, not cat
-
-  build-app1:
-    executor: my-executor
-    steps:
-      - run: echo "Building App 1!"
-      - run: echo "App 1 Build Artifacts" > app1
-      - persist_to_workspace:
-          root: .              # Fixed: use current directory (/tmp)
-          paths:
-            - app1
-
-  build-app2:
-    executor: my-executor
-    steps:
-      - run: echo "Building App 2!"
-      - run: echo "App 2 Build Artifacts" > app2
-      - persist_to_workspace:
-          root: .              # Fixed: use current directory (/tmp)
-          paths:
-            - app2
-
-  build-app3:
-    executor: my-executor
-    steps:
-      - run: echo "Building App 3!"
-      - run: echo "App 3 Build Artifacts" > app3
-      - persist_to_workspace:
-          root: .              # Fixed: use current directory (/tmp)
-          paths:
-            - app3
-
-  push-and-deploy:
-    executor: my-executor
-    steps:
-      - run: echo "Log in to Docker with this secret ${variable1}"
-      - attach_workspace: 
-          at: /tmp             # Restore to working directory
-      - run: cat /tmp/app1     # Fixed: add 'run:' prefix
-      - run: cat /tmp/app2     # Fixed: add 'run:' prefix
-      - run: cat /tmp/app3     # Fixed: add 'run:' prefix
-      - run: echo "Pushing to Docker!"
-      - run: echo "Login to AWS with secret ${variable1}"
-      - run: echo "Deploy to AWS!"
-
-  rollback:
-    executor: my-executor
-    steps:
-      - run: echo "Rolling back!"
+      - checkout
+      - run:
+          name: Generate dynamic configuration
+          command: |
+            # Create your generate-config script
+            chmod +x .circleci/generate-config.sh
+            ./.circleci/generate-config.sh > generated-config.yml
+      - continuation/continue:
+          configuration_path: generated-config.yml
 
 workflows:
-  workflow1:
+  setup-workflow:
     jobs:
-      - test
-      - build-app1:
-          requires:
-            - test
-      - build-app2:
-          requires:
-            - test
-      - build-app3:
-          requires:
-            - test
-      - push-and-deploy:
-          #type: approval
-          context:
-            - variable
-          requires:
-            - build-app1
-            - build-app2
-            - build-app3
-      - rollback:
-          context:
-            - variable
-          requires:
-            - push-and-deploy:
-                - failed
-
-  scheduled-workflow:
-    triggers:
-      - schedule:
-          cron: "0 1 * * *"
-          filters:
-            branches:
-              only: 
-                - main
-    jobs:
-      - test
-      - build-app1:
-          requires:
-            - test
-      - build-app2:
-          requires:
-            - test
-      - build-app3:
-          requires:
-            - test
-
-  test-conditional:
-    when: << pipeline.parameters.test-conditional >>
-    jobs:
-      - test:
-          filters:  
-            branches:
-              only:  
-                - dev
+      - setup

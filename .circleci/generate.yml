@@ -1,0 +1,131 @@
+version: 2.1
+
+setup: true
+
+orbs:
+  continuation: circleci/continuation@2.0.0
+
+parameters:
+  image-tag:
+    type: string
+    default: "current"
+  test-conditional:
+    type: boolean
+    default: true
+
+executors:
+  my-executor:
+    docker:
+      - image: cimg/base:<< pipeline.parameters.image-tag >>
+    working_directory: /tmp
+
+jobs:
+  test:
+    executor: my-executor
+    steps:
+      - run: echo "Testing..."  
+
+  build-app1:
+    executor: my-executor
+    steps:
+      - run: echo "Building App 1!"
+      - run: echo "App 1 Build Artifacts" > app1
+      - persist_to_workspace:
+          root: .              
+          paths:
+            - app1
+
+  build-app2:
+    executor: my-executor
+    steps:
+      - run: echo "Building App 2!"
+      - run: echo "App 2 Build Artifacts" > app2
+      - persist_to_workspace:
+          root: .              
+          paths:
+            - app2
+
+  build-app3:
+    executor: my-executor
+    steps:
+      - run: echo "Building App 3!"
+      - run: echo "App 3 Build Artifacts" > app3
+      - persist_to_workspace:
+          root: .            
+          paths:
+            - app3
+
+  push-and-deploy:
+    executor: my-executor
+    steps:
+      - run: echo "Log in to Docker with this secret ${variable1}"
+      - attach_workspace: 
+          at: /tmp             # Restore to working directory
+      - run: cat /tmp/app1     # Fixed: add 'run:' prefix
+      - run: cat /tmp/app2     # Fixed: add 'run:' prefix
+      - run: cat /tmp/app3     # Fixed: add 'run:' prefix
+      - run: echo "Pushing to Docker!"
+      - run: echo "Login to AWS with secret ${variable1}"
+      - run: echo "Deploy to AWS!"
+
+  rollback:
+    executor: my-executor
+    steps:
+      - run: echo "Rolling back!"
+
+workflows:
+  workflow1:
+    jobs:
+      - test
+      - build-app1:
+          requires:
+            - test
+      - build-app2:
+          requires:
+            - test
+      - build-app3:
+          requires:
+            - test
+      - push-and-deploy:
+          #type: approval
+          context:
+            - variable
+          requires:
+            - build-app1
+            - build-app2
+            - build-app3
+      - rollback:
+          context:
+            - variable
+          requires:
+            - push-and-deploy:
+                - failed
+
+  scheduled-workflow:
+    triggers:
+      - schedule:
+          cron: "0 1 * * *"
+          filters:
+            branches:
+              only: 
+                - main
+    jobs:
+      - test
+      - build-app1:
+          requires:
+            - test
+      - build-app2:
+          requires:
+            - test
+      - build-app3:
+          requires:
+            - test
+
+  test-conditional:
+    when: << pipeline.parameters.test-conditional >>
+    jobs:
+      - test:
+          filters:  
+            branches:
+              only:  
+                - dev
