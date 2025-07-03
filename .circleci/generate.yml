@@ -2,8 +2,6 @@ version: 2.1
 
 setup: true
 
-orbs:
-  continuation: circleci/continuation@2.0.0
 
 parameters:
   image-tag:
