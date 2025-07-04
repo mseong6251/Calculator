@@ -291,9 +291,7 @@ workflows:
           mapping: |
             .*\.py run-python-tests true
           config-path: .circleci/continue-test.yml
-
-  workspaces-practice:
-    jobs:
+      # workspace demonstration
       - generate-data
       - process-data:
           requires:
