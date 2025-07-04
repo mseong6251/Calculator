@@ -64,7 +64,7 @@ jobs:
     executor: my-executor
     steps:
       - attach_workspace:
-          at: /tmp/job2-attached
+          at: /tmp/workspace
       - run:
           name: Process workspace files
           command: |
