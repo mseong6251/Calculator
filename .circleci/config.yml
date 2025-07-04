@@ -33,6 +33,240 @@ jobs:
     steps:
       - run: |
           echo "Config override: << pipeline.parameters.config-override >>"
+          
+  generate-data:
+    executor: my-executor
+    steps:
+      - checkout
+      - run:
+          name: Print workspace path system
+          command: |
+            echo "🗂️  WORKSPACE PATH SYSTEM INFORMATION"
+            echo "======================================"
+            echo "Current working directory: $(pwd)"
+            echo "Home directory: $HOME"
+            echo "User: $(whoami)"
+            echo "Hostname: $(hostname)"
+            echo ""
+            
+            echo "📁 Environment Variables:"
+            echo "CIRCLE_WORKING_DIRECTORY: ${CIRCLE_WORKING_DIRECTORY:-'Not set'}"
+            echo "TMPDIR: ${TMPDIR:-'Not set'}"
+            echo ""
+            
+            echo "🌳 Directory structure from root:"
+            echo "Current directory contents:"
+            ls -la
+            echo ""
+            
+            echo "📂 /tmp directory structure:"
+            ls -la /tmp/
+            echo ""
+            
+            echo "💾 Disk usage:"
+            df -h
+            echo ""
+            
+            echo "🔍 Full path exploration:"
+            echo "Absolute path: $(realpath .)"
+            echo "Parent directory: $(dirname $(pwd))"
+            echo "Directory name: $(basename $(pwd))"
+      - run:
+          name: Create test data
+          command: |
+            echo "📦 Creating workspace directory..."
+            mkdir -p /tmp/workspace
+            echo "Workspace directory created at: $(realpath /tmp/workspace)"
+            echo ""
+            
+            echo "📄 Creating data files..."
+            echo "Generated at: $(date)" > /tmp/workspace/metadata.txt
+            echo "Build number: $CIRCLE_BUILD_NUM" >> /tmp/workspace/metadata.txt
+            echo "Branch: $CIRCLE_BRANCH" >> /tmp/workspace/metadata.txt
+            echo "Working directory: $(pwd)" >> /tmp/workspace/metadata.txt
+            echo "Workspace path: $(realpath /tmp/workspace)" >> /tmp/workspace/metadata.txt
+            
+            # Create some sample data files
+            echo "Sample data 1" > /tmp/workspace/data1.txt
+            echo "Sample data 2" > /tmp/workspace/data2.txt
+            
+            # Create a JSON file with build info
+            cat > /tmp/workspace/build-info.json << EOF
+            {
+              "build_number": "$CIRCLE_BUILD_NUM",
+              "branch": "$CIRCLE_BRANCH",
+              "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+              "working_directory": "$(pwd)",
+              "workspace_path": "$(realpath /tmp/workspace)",
+              "files_created": ["data1.txt", "data2.txt", "metadata.txt"]
+            }
+            EOF
+            
+            echo "✅ Data generation complete"
+            echo "📁 Workspace contents:"
+            ls -la /tmp/workspace/
+            echo ""
+            echo "🔗 Workspace path details:"
+            echo "Real path: $(realpath /tmp/workspace)"
+            echo "Directory size: $(du -sh /tmp/workspace)"
+            echo "Inode: $(ls -i /tmp/workspace | head -1 | awk '{print $1}')"
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - "*.txt"
+            - "*.json"
+            
+  process-data:
+    executor: my-executor
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Examine attached workspace paths
+          command: |
+            echo "🔄 ATTACHED WORKSPACE PATH ANALYSIS"
+            echo "=================================="
+            echo "Current job working directory: $(pwd)"
+            echo "Workspace attachment point: /tmp/workspace"
+            echo "Attached workspace real path: $(realpath /tmp/workspace)"
+            echo ""
+            
+            echo "📂 Workspace directory structure:"
+            find /tmp/workspace -type d -exec echo "Directory: {}" \;
+            echo ""
+            
+            echo "📄 All files in workspace:"
+            find /tmp/workspace -type f -exec echo "File: {} (Size: $(stat -c%s '{}') bytes)" \;
+            echo ""
+            
+            echo "🔍 File system details:"
+            echo "Mount point: $(df /tmp/workspace | tail -1 | awk '{print $1}')"
+            echo "Available space: $(df -h /tmp/workspace | tail -1 | awk '{print $4}')"
+            echo "Workspace permissions: $(ls -ld /tmp/workspace)"
+            echo ""
+            
+            echo "🌳 Full directory tree:"
+            tree /tmp/workspace 2>/dev/null || find /tmp/workspace -type d | sed 's/[^/]*\//|  /g; s/| *\([^| ]\)/+--\1/'
+      - run:
+          name: Process workspace data
+          command: |
+            echo "📁 Workspace contents:"
+            ls -la /tmp/workspace/
+            
+            echo "📄 Processing metadata:"
+            cat /tmp/workspace/metadata.txt
+            
+            echo "📊 Processing build info:"
+            cat /tmp/workspace/build-info.json
+            
+            # Process the data files
+            echo "🔄 Processing data files:"
+            wc -l /tmp/workspace/data*.txt
+            
+            # Create processed output
+            echo "📦 Creating processed directory..."
+            mkdir -p /tmp/workspace/processed
+            echo "Processed directory created at: $(realpath /tmp/workspace/processed)"
+            
+            cat /tmp/workspace/data*.txt > /tmp/workspace/processed/combined-data.txt
+            echo "Processed at: $(date)" >> /tmp/workspace/processed/combined-data.txt
+            echo "Processed in directory: $(pwd)" >> /tmp/workspace/processed/combined-data.txt
+            echo "Processed workspace path: $(realpath /tmp/workspace)" >> /tmp/workspace/processed/combined-data.txt
+            
+            echo "✅ Data processing complete"
+            echo "📁 Updated workspace structure:"
+            find /tmp/workspace -type f -exec echo "📄 {}" \;
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - "processed/*"
+            
+  publish-results:
+    executor: my-executor
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+      - run:
+          name: Final workspace path system analysis
+          command: |
+            echo "📋 FINAL WORKSPACE PATH SYSTEM ANALYSIS"
+            echo "======================================="
+            echo "Current job working directory: $(pwd)"
+            echo "Final workspace attachment point: /tmp/workspace"
+            echo "Final workspace real path: $(realpath /tmp/workspace)"
+            echo ""
+            
+            echo "📊 Complete workspace statistics:"
+            echo "Total files: $(find /tmp/workspace -type f | wc -l)"
+            echo "Total directories: $(find /tmp/workspace -type d | wc -l)"
+            echo "Total workspace size: $(du -sh /tmp/workspace | cut -f1)"
+            echo "Workspace disk usage: $(du -h /tmp/workspace)"
+            echo ""
+            
+            echo "🗂️  Complete directory structure:"
+            echo "Root: /tmp/workspace"
+            find /tmp/workspace -type d | sort | sed 's/\/tmp\/workspace//' | sed 's/^/  /'
+            echo ""
+            
+            echo "📁 All files with full paths:"
+            find /tmp/workspace -type f | sort | while read file; do
+              echo "  📄 $file"
+              echo "    - Size: $(stat -c%s "$file") bytes"
+              echo "    - Modified: $(stat -c%y "$file")"
+              echo "    - Permissions: $(stat -c%A "$file")"
+            done
+            echo ""
+            
+            echo "🔍 Path relationships:"
+            echo "Workspace relative to root: $(realpath --relative-to=/ /tmp/workspace)"
+            echo "Workspace relative to home: $(realpath --relative-to=$HOME /tmp/workspace 2>/dev/null || echo 'N/A')"
+            echo "Workspace relative to working dir: $(realpath --relative-to=$(pwd) /tmp/workspace)"
+            echo ""
+            
+            echo "🌍 System environment paths:"
+            echo "PATH: $PATH"
+            echo "HOME: $HOME"
+            echo "PWD: $PWD"
+            echo "OLDPWD: ${OLDPWD:-'Not set'}"
+            echo "TMPDIR: ${TMPDIR:-'Not set'}"
+            echo ""
+            
+            echo "📍 CircleCI specific paths:"
+            echo "CIRCLE_WORKING_DIRECTORY: ${CIRCLE_WORKING_DIRECTORY:-'Not set'}"
+            echo "CIRCLE_PROJECT_REPONAME: ${CIRCLE_PROJECT_REPONAME:-'Not set'}"
+            echo "CIRCLE_PROJECT_USERNAME: ${CIRCLE_PROJECT_USERNAME:-'Not set'}"
+      - run:
+          name: Publish final results
+          command: |
+            echo "📋 Final workspace contents:"
+            find /tmp/workspace -type f -exec echo "📄 {}: " \; -exec cat {} \; -exec echo "" \;
+            
+            echo "📦 Creating final report..."
+            cat > /tmp/workspace/final-report.txt << EOF
+            ========================================
+            WORKSPACE DEMONSTRATION REPORT
+            ========================================
+            Build: $CIRCLE_BUILD_NUM
+            Branch: $CIRCLE_BRANCH
+            Completed: $(date)
+            
+            Original files created by generate-data job:
+            EOF
+            
+            ls -la /tmp/workspace/*.txt /tmp/workspace/*.json 2>/dev/null | sed 's/^/  /' >> /tmp/workspace/final-report.txt
+            
+            echo "" >> /tmp/workspace/final-report.txt
+            echo "Processed files created by process-data job:" >> /tmp/workspace/final-report.txt
+            ls -la /tmp/workspace/processed/ 2>/dev/null | sed 's/^/  /' >> /tmp/workspace/final-report.txt
+            
+            echo "" >> /tmp/workspace/final-report.txt
+            echo "========================================" >> /tmp/workspace/final-report.txt
+            
+            echo "📄 Final report:"
+            cat /tmp/workspace/final-report.txt
+            
+            echo "✅ Workspace demonstration complete!"
+            
   setup:
     executor: continuation/default
     steps:
@@ -57,4 +291,14 @@ workflows:
           mapping: |
             .*\.py run-python-tests true
           config-path: .circleci/continue-test.yml
+
+  workspaces-practice:
+    jobs:
+      - generate-data
+      - process-data:
+          requires:
+            - generate-data
+      - publish-results:
+          requires:
+            - process-data
   
