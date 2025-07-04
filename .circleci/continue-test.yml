@@ -15,6 +15,15 @@ executors:
     working_directory: ~/project
 
 jobs:
+  debug-parameters:
+    executor: python-executor
+    steps:
+      - run:
+          name: Print pipeline parameters
+          command: |
+            echo "🔍 run-python-tests parameter: << pipeline.parameters.run-python-tests >>"
+            echo "🔍 image-tag parameter: << pipeline.parameters.image-tag >>"
+
   test-python-syntax:
     executor: python-executor
     steps:
@@ -122,6 +131,7 @@ workflows:
   python-test-workflow:
     when: << pipeline.parameters.run-python-tests >>
     jobs:
+      - debug-parameters
       - test-python-syntax
       - test-python-functionality:
           requires:
@@ -140,4 +150,5 @@ workflows:
   default-workflow:
     unless: << pipeline.parameters.run-python-tests >>
     jobs:
+      - debug-parameters
       - test-python-syntax 

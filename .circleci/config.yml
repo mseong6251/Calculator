@@ -44,6 +44,6 @@ workflows:
       - path-filtering/filter:
           base-revision: main
           mapping: |
-            *.py run-python-tests true
+            .*\.py run-python-tests true
           config-path: .circleci/continue-test.yml
   
