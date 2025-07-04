@@ -4,6 +4,9 @@ parameters:
   run-python-tests:
     type: boolean
     default: false
+  config-override:
+    type: string
+    default: "none"
   image-tag:
     type: string
     default: "current"
@@ -22,6 +25,7 @@ jobs:
           name: Print pipeline parameters
           command: |
             echo "🔍 run-python-tests parameter: << pipeline.parameters.run-python-tests >>"
+            echo "🔍 config-override parameter: << pipeline.parameters.config-override >>"
             echo "🔍 image-tag parameter: << pipeline.parameters.image-tag >>"
 
   test-python-syntax:
