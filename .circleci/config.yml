@@ -40,27 +40,21 @@ jobs:
       - run:
           name: Create workspace files
           command: |
-            echo "🏗️  JOB 1: GENERATE-DATA"
+            echo "JOB 1"
             echo "========================="
             
             # Create workspace directory
             mkdir -p /tmp/workspace
             
             # Create initial files
-            echo "Hello from generate-data job!" > /tmp/workspace/greeting.txt
-            echo "Build: $CIRCLE_BUILD_NUM" > /tmp/workspace/build-info.txt
-            echo "data-line-1" > /tmp/workspace/data.txt
-            echo "data-line-2" >> /tmp/workspace/data.txt
+            echo "This is file 1!" > /tmp/workspace/file1.txt
+            echo "This is file 2!" > /tmp/workspace/file2.txt
             
             echo "📁 Files created in this job:"
             ls -la /tmp/workspace/
-            echo ""
-            echo "📄 File contents:"
-            for file in /tmp/workspace/*; do
-              echo "--- $(basename $file) ---"
-              cat $file
-              echo ""
-            done
+
+            echo "Workspace root is /tmp/workspace"
+         
       - persist_to_workspace:
           root: /tmp/workspace
           paths:
@@ -70,54 +64,35 @@ jobs:
     executor: my-executor
     steps:
       - attach_workspace:
-          at: /tmp/workspace
+          at: /tmp/job2-attached
       - run:
           name: Process workspace files
           command: |
-            echo "⚙️  JOB 2: PROCESS-DATA"
+            echo "Job 2"
             echo "======================"
             
             echo "📁 Files received from previous job:"
-            ls -la /tmp/workspace/
+            ls -laR /tmp/workspace/
             echo ""
             
-            echo "📄 Original file contents:"
-            for file in /tmp/workspace/*.txt; do
-              echo "--- $(basename $file) ---"
-              cat $file
-              echo ""
-            done
+            mkdir -p /tmp/workspace/job2
             
             # Process the data
             echo "🔄 Processing data..."
-            echo "Hello from process-data job!" > /tmp/workspace/processed-greeting.txt
-            echo "Processed: $(date)" > /tmp/workspace/processing-log.txt
+            echo "This is file 1 from job 2" > /tmp/workspace/job2/file1job2.txt
+            echo "This is file 2 from job 2" > /tmp/workspace/job2/file2job2.txt
             
-            # Modify existing data
-            echo "data-line-3 (added by process-data)" >> /tmp/workspace/data.txt
             
-            # Create summary file
-            echo "Summary of processing:" > /tmp/workspace/summary.txt
-            echo "- Modified data.txt" >> /tmp/workspace/summary.txt
-            echo "- Created processed-greeting.txt" >> /tmp/workspace/summary.txt
-            echo "- Created processing-log.txt" >> /tmp/workspace/summary.txt
             
-            echo "📁 Files after processing:"
-            ls -la /tmp/workspace/
+            echo "📁 Files after processing (This will get added to workspace):"
+            ls -laR /tmp/workspace/
             echo ""
-            
-            echo "📄 New/modified file contents:"
-            for file in /tmp/workspace/processed-greeting.txt /tmp/workspace/processing-log.txt /tmp/workspace/summary.txt /tmp/workspace/data.txt; do
-              if [ -f "$file" ]; then
-                echo "--- $(basename $file) ---"
-                cat $file
-                echo ""
-              fi
-            done
+      
       - persist_to_workspace:
           root: /tmp/workspace
           paths:
             - "*.txt"
+            - "job2"
             
   publish-results:
     executor: my-executor
@@ -127,34 +102,12 @@ jobs:
       - run:
           name: Show final workspace state
           command: |
-            echo "📋 JOB 3: PUBLISH-RESULTS"
-            echo "========================="
-            
-            echo "📁 Final workspace contents:"
-            ls -la /tmp/workspace/
+            echo "Job 2"
+            echo "======================"
+            echo "📁 Files received from previous job:"
+            ls -laR /tmp/workspace/
             echo ""
             
-            echo "📄 All final file contents:"
-            for file in /tmp/workspace/*.txt; do
-              if [ -f "$file" ]; then
-                echo "--- $(basename $file) ---"
-                cat $file
-                echo ""
-              fi
-            done
-            
-            # Create final summary
-            echo "Creating final report..." > /tmp/workspace/final-report.txt
-            echo "Files created across all jobs:" >> /tmp/workspace/final-report.txt
-            ls -1 /tmp/workspace/*.txt | sed 's/.*\//- /' >> /tmp/workspace/final-report.txt
-            echo "" >> /tmp/workspace/final-report.txt
-            echo "Total files: $(ls -1 /tmp/workspace/*.txt | wc -l)" >> /tmp/workspace/final-report.txt
-            echo "Completed at: $(date)" >> /tmp/workspace/final-report.txt
-            
-            echo "📄 Final report:"
-            cat /tmp/workspace/final-report.txt
-            
-            echo "✅ Workspace demonstration complete!"
             
   setup:
     executor: continuation/default
