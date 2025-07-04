@@ -91,7 +91,7 @@ jobs:
             echo "Sample data 2" > /tmp/workspace/data2.txt
             
             # Create a JSON file with build info
-            cat > /tmp/workspace/build-info.json << EOF
+            cat > /tmp/workspace/build-info.json \<< EOF
             {
               "build_number": "$CIRCLE_BUILD_NUM",
               "branch": "$CIRCLE_BRANCH",
@@ -242,7 +242,7 @@ jobs:
             find /tmp/workspace -type f -exec echo "📄 {}: " \; -exec cat {} \; -exec echo "" \;
             
             echo "📦 Creating final report..."
-            cat > /tmp/workspace/final-report.txt << EOF
+            cat > /tmp/workspace/final-report.txt \<< EOF
             ========================================
             WORKSPACE DEMONSTRATION REPORT
             ========================================
