@@ -7,6 +7,7 @@ setup: true
 orbs:
   continuation: circleci/continuation@2.0.0
   path-filtering: circleci/path-filtering@2.0.1
+  team-config: << pipeline.parameters.config-override >>
 
 # Keep your parameters - they'll be passed to the generated config
 parameters:
@@ -16,6 +17,9 @@ parameters:
   test-conditional:
     type: boolean
     default: true
+  config-override:
+    type: string
+    default: "https://raw.githubusercontent.com/mseong6251/YAML2/refs/heads/main/.circleci/team-config.yml"
 
 executors:
   my-executor:
@@ -24,6 +28,11 @@ executors:
     working_directory: /tmp
 
 jobs:
+  config-override-test:
+    executor: my-executor
+    steps:
+      - run: |
+          echo "Config override: << pipeline.parameters.config-override >>"
   setup:
     executor: continuation/default
     steps:
@@ -41,6 +50,8 @@ workflows:
   setup-workflow:
     jobs:
       # setup
+      - config-override-test:
+          override-with: team-config/custom-test
       - path-filtering/filter:
           base-revision: main
           mapping: |
