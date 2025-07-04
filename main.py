@@ -6,7 +6,7 @@ import calculator
 import utils
 
 def run_calculator():
-    """Main calculator logic!"""
+    """Main calculator logic"""
     print("\nWelcome to the Python Calculator!")
     
     while True:

@@ -40,10 +40,10 @@ jobs:
 workflows:
   setup-workflow:
     jobs:
-      - setup
-      # - path-filtering/filter:
-      #     base-revision: main
-      #     mapping: |
-      #       *.py run-python-tests true
-      #     config-path: .circleci/continue-test.yml
+      # setup
+      - path-filtering/filter:
+          base-revision: main
+          mapping: |
+            *.py run-python-tests true
+          config-path: .circleci/continue-test.yml
   
