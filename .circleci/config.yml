@@ -7,7 +7,6 @@ setup: true
 orbs:
   continuation: circleci/continuation@2.0.0
   path-filtering: circleci/path-filtering@2.0.1
-  team-config: << pipeline.parameters.config-override >>
 
 # Keep your parameters - they'll be passed to the generated config
 parameters:
@@ -125,14 +124,14 @@ jobs:
 workflows:
   setup-workflow:
     jobs:
-      # setup
+      #- setup
       - config-override-test:
-          override-with: team-config/custom-test
+          override-with: team-config/custom-test  
       - path-filtering/filter:
           base-revision: main
           mapping: |
             .*\.py run-python-tests true
-            .*\.py config-override "https://raw.githubusercontent.com/mseong6251/Yaml/refs/heads/dev/.circleci/team-config2.yml"
+            .*\.py config-override "https://raw.githubusercontent.com/mseong6251/YAML2/refs/heads/main/.circleci/team-config1.yml"
           config-path: .circleci/continue-test.yml
       # workspace demonstration. When using dynamic config, you can only have 1 workflow.
       - generate-data
