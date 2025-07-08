@@ -3,7 +3,7 @@ version: 2.1
 # This marks it as a setup configuration for dynamic config
 setup: true
 
-# Only need the continuation orb for this approach
+# Only need the continuation orb for this approach.
 orbs:
   continuation: circleci/continuation@2.0.0
   path-filtering: circleci/path-filtering@2.0.1
