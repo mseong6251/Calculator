@@ -64,6 +64,13 @@ jobs:
   process-data:
     executor: my-executor
     steps:
+      - run:
+          name: Check if test-conditional is true
+          command: |
+            if [ "<< pipeline.parameters.test-conditional >>" = "true" ]; then
+              echo "test-conditional is true, skipping process-data job"
+              exit 0
+            fi
       - attach_workspace:
           at: /tmp/workspace
       - run:
@@ -98,6 +105,13 @@ jobs:
   publish-results:
     executor: my-executor
     steps:
+      - run:
+          name: Check if test-conditional is true
+          command: |
+            if [ "<< pipeline.parameters.test-conditional >>" = "true" ]; then
+              echo "test-conditional is true, skipping publish-results job"
+              exit 0
+            fi
       - attach_workspace:
           at: /tmp/workspace
       - run:
