@@ -28,28 +28,38 @@ jobs:
   generate-data:
     executor: my-executor
     steps:
-      - run:
-          name: Create workspace files
-          command: |
-            echo "JOB 1"
-            echo "========================="
-            
-            # Create workspace directory
-            mkdir -p /tmp/workspace
-            
-            # Create initial files
-            echo "This is file 1!" > /tmp/workspace/file1.txt
-            echo "This is file 2!" > /tmp/workspace/file2.txt
-            
-            echo "📁 Files created in this job:"
-            ls -la /tmp/workspace/
+      - when:
+          condition: << pipeline.parameters.test-conditional >>
+          steps:
+            - run:
+                name: Test conditional
+                command: echo test conditional
+      - when:
+          condition:
+            not: << pipeline.parameters.test-conditional >>
+          steps:
+            - run:
+                name: Create workspace files
+                command: |
+                  echo "JOB 1"
+                  echo "========================="
+                  
+                  # Create workspace directory
+                  mkdir -p /tmp/workspace
+                  
+                  # Create initial files
+                  echo "This is file 1!" > /tmp/workspace/file1.txt
+                  echo "This is file 2!" > /tmp/workspace/file2.txt
+                  
+                  echo "📁 Files created in this job:"
+                  ls -la /tmp/workspace/
 
-            echo "Workspace root is /tmp/workspace"
-         
-      - persist_to_workspace:
-          root: /tmp/workspace
-          paths:
-            - "*.txt"
+                  echo "Workspace root is /tmp/workspace"
+               
+            - persist_to_workspace:
+                root: /tmp/workspace
+                paths:
+                  - "*.txt"
             
   process-data:
     executor: my-executor
