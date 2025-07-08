@@ -64,64 +64,70 @@ jobs:
   process-data:
     executor: my-executor
     steps:
-      - run:
-          name: Check if test-conditional is true
-          command: |
-            if [ "<< pipeline.parameters.test-conditional >>" = "true" ]; then
-              echo "test-conditional is true, skipping process-data job"
-              exit 0
-            fi
-      - attach_workspace:
-          at: /tmp/workspace
-      - run:
-          name: Process workspace files
-          command: |
-            echo "Job 2"
-            echo "======================"
+      - when:
+          condition: << pipeline.parameters.test-conditional >>
+          steps:
+            - run:
+                name: Skip process-data job
+                command: echo "test-conditional is true, skipping process-data job"
+      - when:
+          condition:
+            not: << pipeline.parameters.test-conditional >>
+          steps:
+            - attach_workspace:
+                at: /tmp/workspace
+            - run:
+                name: Process workspace files
+                command: |
+                  echo "Job 2"
+                  echo "======================"
+                  
+                  echo "📁 Files received from previous job:"
+                  ls -laR /tmp/workspace/
+                  echo ""
+                  
+                  mkdir -p /tmp/workspace/job2
+                  
+                  # Process the data
+                  echo "🔄 Processing data..."
+                  echo "This is file 1 from job 2" > /tmp/workspace/job2/file1job2.txt
+                  echo "This is file 2 from job 2" > /tmp/workspace/job2/file2job2.txt
+                  
+                  
+                  
+                  echo "📁 Files after processing (This will get added to workspace):"
+                  ls -laR /tmp/workspace/
+                  echo ""
             
-            echo "📁 Files received from previous job:"
-            ls -laR /tmp/workspace/
-            echo ""
-            
-            mkdir -p /tmp/workspace/job2
-            
-            # Process the data
-            echo "🔄 Processing data..."
-            echo "This is file 1 from job 2" > /tmp/workspace/job2/file1job2.txt
-            echo "This is file 2 from job 2" > /tmp/workspace/job2/file2job2.txt
-            
-            
-            
-            echo "📁 Files after processing (This will get added to workspace):"
-            ls -laR /tmp/workspace/
-            echo ""
-      
-      - persist_to_workspace:
-          root: /tmp/workspace
-          paths:
-            - "*.txt"
-            - "job2"
+            - persist_to_workspace:
+                root: /tmp/workspace
+                paths:
+                  - "*.txt"
+                  - "job2"
             
   publish-results:
     executor: my-executor
     steps:
-      - run:
-          name: Check if test-conditional is true
-          command: |
-            if [ "<< pipeline.parameters.test-conditional >>" = "true" ]; then
-              echo "test-conditional is true, skipping publish-results job"
-              exit 0
-            fi
-      - attach_workspace:
-          at: /tmp/workspace
-      - run:
-          name: Show final workspace state
-          command: |
-            echo "Job 2"
-            echo "======================"
-            echo "📁 Files received from previous job:"
-            ls -laR /tmp/workspace/
-            echo ""
+      - when:
+          condition: << pipeline.parameters.test-conditional >>
+          steps:
+            - run:
+                name: Skip publish-results job
+                command: echo "test-conditional is true, skipping publish-results job"
+      - when:
+          condition:
+            not: << pipeline.parameters.test-conditional >>
+          steps:
+            - attach_workspace:
+                at: /tmp/workspace
+            - run:
+                name: Show final workspace state
+                command: |
+                  echo "Job 2"
+                  echo "======================"
+                  echo "📁 Files received from previous job:"
+                  ls -laR /tmp/workspace/
+                  echo ""
             
             
   setup:
