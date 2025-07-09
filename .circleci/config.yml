@@ -28,6 +28,11 @@ jobs:
   generate-data:
     executor: my-executor
     steps:
+      - run:
+          name: Debug parameter value
+          command: |
+            echo "test-conditional parameter value: '<< pipeline.parameters.test-conditional >>'"
+            echo "Parameter evaluation complete"
       - when:
           condition: << pipeline.parameters.test-conditional >>
           steps:
