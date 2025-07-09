@@ -15,7 +15,7 @@ parameters:
     default: "current"
   test-conditional:
     type: boolean
-    default: true
+    default: false
 
 executors:
   my-executor:
