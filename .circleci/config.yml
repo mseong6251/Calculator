@@ -32,6 +32,7 @@ jobs:
           name: Debug parameter value
           command: |
             echo "test-conditional parameter value: '<< pipeline.parameters.test-conditional >>'"
+            echo "pipeline.project.slug: '<< pipeline.project.slug >>'"
             echo "Parameter evaluation complete"
       - when:
           condition: << pipeline.parameters.test-conditional >>
