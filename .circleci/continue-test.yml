@@ -10,6 +10,9 @@ parameters:
   image-tag:
     type: string
     default: "current"
+  test-conditional:
+    type: boolean
+    default: false
 
 executors:
   python-executor:
