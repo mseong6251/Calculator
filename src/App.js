@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import './App.css';
 
 function App() {
@@ -19,18 +19,15 @@ function App() {
 
     let calcResult;
     let operationSymbol;
-    let operationName;
 
     switch (operation) {
       case 'add':
         calcResult = n1 + n2;
         operationSymbol = '+';
-        operationName = 'addition';
         break;
       case 'multiply':
         calcResult = n1 * n2;
         operationSymbol = '*';
-        operationName = 'multiplication';
         break;
       case 'divide':
         if (n2 === 0) {
@@ -39,12 +36,10 @@ function App() {
         }
         calcResult = n1 / n2;
         operationSymbol = '/';
-        operationName = 'division';
         break;
       case 'power':
         calcResult = Math.pow(n1, n2);
         operationSymbol = '^';
-        operationName = 'power';
         break;
       default:
         return;
