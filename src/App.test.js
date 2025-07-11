@@ -35,7 +35,9 @@ describe('Calculator App', () => {
     fireEvent.change(secondInput, { target: { value: '3' } });
     fireEvent.click(addButton);
 
-    expect(screen.getByText(/Result: 8.00/i)).toBeInTheDocument();
+    // Check for the result in the result section specifically
+    const resultElement = document.querySelector('.result .success');
+    expect(resultElement).toHaveTextContent('8.00');
   });
 
   test('handles division by zero', () => {
@@ -49,7 +51,7 @@ describe('Calculator App', () => {
     fireEvent.change(secondInput, { target: { value: '0' } });
     fireEvent.click(divideButton);
 
-    expect(screen.getByText(/Error: Cannot divide by zero/i)).toBeInTheDocument();
+    expect(screen.getByText('Error: Cannot divide by zero')).toBeInTheDocument();
   });
 
   test('tracks calculation history', () => {
@@ -63,6 +65,6 @@ describe('Calculator App', () => {
     fireEvent.change(secondInput, { target: { value: '3' } });
     fireEvent.click(addButton);
 
-    expect(screen.getByText(/2 \+ 3 = 5.00/i)).toBeInTheDocument();
+    expect(screen.getByText('2 + 3 = 5.00')).toBeInTheDocument();
   });
 }); 
