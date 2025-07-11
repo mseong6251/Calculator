@@ -156,7 +156,9 @@ workflows:
       - path-filtering/filter:
           base-revision: main
           mapping: |
-            .*\.py run-python-tests true
+            src/.* run-react-tests true
+            package\.json run-react-tests true
+            public/.* run-react-tests true
           config-path: .circleci/continue-test.yml
       # workspace demonstration. When using dynamic config, you can only have 1 workflow.
       - generate-data
