@@ -73,7 +73,7 @@ jobs:
           name: Run React tests
           command: |
             mkdir -p test-results
-            find src -name "*.test.js" -o -name "*.test.jsx" | circleci tests run --split-by=timings --command "xargs -r npm test -- --coverage --watchAll=false --reporters=default --reporters=jest-junit"
+            find src -name "*.test.js" -o -name "*.test.jsx" | circleci tests run --split-by=timings --command "xargs -r -I {} npm test {} -- --coverage --watchAll=false --reporters=default --reporters=jest-junit"
             echo "✅ React tests completed"
           environment:
             CI: true
@@ -98,7 +98,7 @@ jobs:
           command: |
             mkdir -p test-results/eslint lint-results
             # Split and lint JS/JSX files (each container writes to unique file)
-            find src -name "*.js" -o -name "*.jsx" | circleci tests run --split-by=timings --command "xargs -r npx eslint --format junit --output-file test-results/eslint/results-${CIRCLE_NODE_INDEX}.xml"
+            find src -name "*.js" -o -name "*.jsx" | circleci tests run --split-by=timings --command "xargs -r -I {} npx eslint {} --format junit --output-file test-results/eslint/results-${CIRCLE_NODE_INDEX}.xml"
             # Generate additional reports (only on container 0 to avoid conflicts)
             if [ "$CIRCLE_NODE_INDEX" = "0" ]; then
               npx eslint src/ --ext .js,.jsx --format html --output-file lint-results/eslint-report.html || echo "⚠️  Linting issues found"
