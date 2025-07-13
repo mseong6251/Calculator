@@ -73,16 +73,21 @@ jobs:
           name: Run React tests
           command: |
             mkdir -p test-results
-            CI=true npm test -- --coverage --watchAll=false --reporters=default --reporters=jest-junit
-            echo "✅ React tests completed" | circleci tests split --split-by=timings
+            find src -name "*.test.js" -o -name "*.test.jsx" | circleci tests run --split-by=timings --command "xargs -r npm test -- --coverage --watchAll=false --reporters=default --reporters=jest-junit"
+            echo "✅ React tests completed"
           environment:
+            CI: true
             JEST_JUNIT_OUTPUT_DIR: test-results
             JEST_JUNIT_OUTPUT_NAME: jest-junit.xml
       - store_test_results:
           path: test-results
+      - store_artifacts:
+          path: coverage
+          destination: coverage-report
 
   lint-react-code:
     executor: node-executor
+    parallelism: 2
     steps:
       - checkout
       - restore_cache:
@@ -91,10 +96,23 @@ jobs:
       - run:
           name: Lint React code
           command: |
-            npx eslint src/ --ext .js,.jsx --format junit --output-file test-results/eslint/results.xml || echo "⚠️  Linting issues found"
+            mkdir -p test-results/eslint lint-results
+            # Split and lint JS/JSX files (each container writes to unique file)
+            find src -name "*.js" -o -name "*.jsx" | circleci tests run --split-by=timings --command "xargs -r npx eslint --format junit --output-file test-results/eslint/results-${CIRCLE_NODE_INDEX}.xml"
+            # Generate additional reports (only on container 0 to avoid conflicts)
+            if [ "$CIRCLE_NODE_INDEX" = "0" ]; then
+              npx eslint src/ --ext .js,.jsx --format html --output-file lint-results/eslint-report.html || echo "⚠️  Linting issues found"
+              npx eslint src/ --ext .js,.jsx --format json --output-file lint-results/eslint-report.json || echo "⚠️  Linting issues found"
+            fi
             echo "✅ Code linting complete"
       - store_test_results:
           path: test-results
+      - store_artifacts:
+          path: lint-results
+          destination: lint-reports
+      - store_artifacts:
+          path: test-results/eslint
+          destination: eslint-xml
 
 workflows:
   react-test-workflow:
