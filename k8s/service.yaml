@@ -4,6 +4,12 @@ metadata:
   name: calculator-app-service
   labels:
     app: calculator-app
+    # CircleCI Deploys required labels
+    circleci.com/component-name: calculator-app
+    circleci.com/environment-name: production
+  annotations:
+    # CircleCI Deploys required annotation (replace with your project ID)
+    circleci.com/project-id: "82cf6c89-5995-4fae-881f-336af18d4d50"
 spec:
   type: LoadBalancer
   ports:

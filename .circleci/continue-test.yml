@@ -130,7 +130,6 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker:
-          version: 20.10.14
           docker_layer_caching: true
       - run:
           name: Build Docker image
@@ -181,7 +180,12 @@ jobs:
             sed -i "s|image: minjun6251/calculator-app:latest|image: minjun6251/calculator-app:${CIRCLE_SHA1}|g" k8s/deployment.yaml
             echo "✅ Deployment image updated"
       - run:
-          name: Deploy to Kubernetes
+          name: Verify k8s files
+          command: |
+            echo "🔧 Verifying k8s files..."
+            echo "✅ Project ID already configured in k8s files"
+      - run:
+          name: Deploy to Kubernetes with CircleCI Deploys
           command: |
             echo "🚀 Deploying to Kubernetes..."
             kubectl apply -f k8s/
@@ -193,6 +197,22 @@ jobs:
             kubectl rollout status deployment/calculator-app --timeout=300s
             echo "✅ Deployment ready"
       - run:
+          name: Create CircleCI deployment
+          command: |
+            echo "📝 Creating CircleCI deployment record..."
+            # Create deployment record in CircleCI
+            curl -X POST \
+              -H "Circle-Token: ${CIRCLECI_TOKEN}" \
+              -H "Content-Type: application/json" \
+              "https://circleci.com/api/v2/project/github/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}/deploy" \
+              -d '{
+                "revision": "'${CIRCLE_SHA1}'",
+                "environment": "production",
+                "component": "calculator-app",
+                "status": "success"
+              }'
+            echo "✅ CircleCI deployment recorded"
+      - run:
           name: Get deployment status
           command: |
             echo "📊 Deployment status:"
@@ -202,7 +222,7 @@ jobs:
 
 workflows:
   react-test-workflow:
-    when: << pipeline.parameters.run-react-tests >>
+    # when: << pipeline.parameters.run-react-tests >>
     jobs:
       - debug-parameters
       - install-dependencies

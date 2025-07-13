@@ -4,6 +4,12 @@ metadata:
   name: calculator-app
   labels:
     app: calculator-app
+    # CircleCI Deploys required labels
+    circleci.com/component-name: calculator-app
+    circleci.com/environment-name: production
+  annotations:
+    # CircleCI Deploys required annotation (replace with your project ID)
+    circleci.com/project-id: "82cf6c89-5995-4fae-881f-336af18d4d50"
 spec:
   replicas: 4
   selector:
@@ -13,6 +19,9 @@ spec:
     metadata:
       labels:
         app: calculator-app
+        # CircleCI Deploys required labels for pods
+        circleci.com/component-name: calculator-app
+        circleci.com/environment-name: production
     spec:
       containers:
       - name: calculator-app
