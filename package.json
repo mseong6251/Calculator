@@ -15,11 +15,12 @@
     "react-scripts": "5.0.1"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^14.4.3",
     "eslint": "^8.57.0",
     "eslint-plugin-react": "^7.34.1",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/user-event": "^14.4.3"
+    "jest-junit": "^16.0.0"
   },
   "browserslist": {
     "production": [
@@ -41,4 +42,4 @@
   ],
   "author": "Calculator App",
   "license": "MIT"
-} 
+}

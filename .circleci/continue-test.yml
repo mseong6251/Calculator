@@ -45,19 +45,6 @@ jobs:
           paths:
             - node_modules
 
-  test-javascript-syntax:
-    executor: node-executor
-    steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - v1-dependencies-{{ checksum "package.json" }}
-      - run:
-          name: Check JavaScript syntax
-          command: |
-            npx eslint src/ --ext .js,.jsx || echo "⚠️  ESLint issues found"
-            echo "✅ JavaScript syntax check complete"
-
   test-react-build:
     executor: node-executor
     steps:
@@ -84,8 +71,12 @@ jobs:
       - run:
           name: Run React tests
           command: |
-            CI=true npm test -- --coverage --watchAll=false
+            mkdir -p test-results
+            CI=true npm test -- --coverage --watchAll=false --reporters=default --reporters=jest-junit
             echo "✅ React tests completed"
+          environment:
+            JEST_JUNIT_OUTPUT_DIR: test-results
+            JEST_JUNIT_OUTPUT_NAME: jest-junit.xml
       - store_test_results:
           path: test-results
 
@@ -110,9 +101,6 @@ workflows:
     jobs:
       - debug-parameters
       - install-dependencies
-      - test-javascript-syntax:
-          requires:
-            - install-dependencies
       - test-react-build:
           requires:
             - install-dependencies
