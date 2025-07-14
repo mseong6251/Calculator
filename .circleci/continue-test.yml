@@ -152,6 +152,30 @@ jobs:
             docker push minjun6251/calculator-app:latest
             echo "✅ Docker image pushed successfully"
 
+  # Render deployment job
+  deploy-to-render:
+    executor: docker-executor
+    steps:
+      - checkout
+      - run:
+          name: Install curl
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y curl
+      - run:
+          name: Trigger Render deployment
+          command: |
+            echo "🚀 Triggering Render deployment..."
+            curl -X POST "$RENDER_DEPLOY_HOOK_URL" \
+              -H "Content-Type: application/json"
+            echo "✅ Render deployment triggered"
+      - run:
+          name: Wait for deployment
+          command: |
+            echo "⏳ Waiting for deployment to complete..."
+            sleep 30
+            echo "✅ Deployment should be complete"
+
   # Kubernetes deployment job
   deploy-to-kubernetes:
     executor: docker-executor
@@ -244,13 +268,20 @@ workflows:
           filters:
             branches:
               only: main
-      # Kubernetes deployment after Docker image is pushed
-      - deploy-to-kubernetes:
+      # Render deployment after Docker image is pushed
+      - deploy-to-render:
           requires:
             - build-and-push-docker
           filters:
             branches:
               only: main
+      # Kubernetes deployment after Docker image is pushed
+      # - deploy-to-kubernetes:
+      #     requires:
+      #       - build-and-push-docker
+      #     filters:
+      #       branches:
+      #         only: main
 
   default-workflow:
     unless: << pipeline.parameters.run-react-tests >>
