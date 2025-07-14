@@ -70,7 +70,7 @@ function App() {
 
   return (
     <div className="calculator">
-      <h1>🧮 Simple React Calculator</h1>
+      <h1>🧮 Simple React Calculator!</h1>
       
       <div className="input-section">
         <input
