@@ -158,10 +158,14 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install curl
+          name: Plan deployment
           command: |
-            sudo apt-get update
-            sudo apt-get install -y curl
+            echo "📝 Planning deployment to Render..."
+            circleci run release plan \
+              --environment-name=production \
+              --component-name=calculator-app \
+              --target-version=${CIRCLE_SHA1}
+            echo "✅ Deployment planned in CircleCI"
       - run:
           name: Trigger Render deployment
           command: |
@@ -170,11 +174,73 @@ jobs:
               -H "Content-Type: application/json"
             echo "✅ Render deployment triggered"
       - run:
-          name: Wait for deployment
+          name: Update deployment to running
           command: |
-            echo "⏳ Waiting for deployment to complete..."
-            sleep 30
-            echo "✅ Deployment should be complete"
+            echo "🔄 Updating deployment status to running..."
+            circleci run release update --status=running
+            echo "✅ Deployment status updated to running"
+      - run:
+          name: Validate deployment
+          command: |
+            echo "🔍 Validating deployment..."
+            
+            # Wait a bit for Render to start deployment
+            sleep 10
+            
+            # Your Render app URL (update this to your actual URL)
+            APP_URL="https://calculator-app-minjun.onrender.com"
+            
+            # Retry logic - try for up to 3 minutes
+            MAX_ATTEMPTS=18
+            ATTEMPT=1
+            
+            while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+              echo "🔄 Validation attempt $ATTEMPT/$MAX_ATTEMPTS..."
+              
+              # Check if app responds with 200 status
+              HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$APP_URL" || echo "000")
+              
+              if [ "$HTTP_STATUS" = "200" ]; then
+                echo "✅ Deployment validation successful! App is responding."
+                break
+              else
+                echo "⏳ App returned status $HTTP_STATUS, retrying in 10 seconds..."
+                sleep 10
+                ATTEMPT=$((ATTEMPT + 1))
+              fi
+            done
+            
+            # Final check
+            if [ $ATTEMPT -gt $MAX_ATTEMPTS ]; then
+              echo "❌ Deployment validation failed after $MAX_ATTEMPTS attempts"
+              echo "FAILURE_REASON='App failed to respond after deployment'" > failure_reason.env
+              exit 1
+            fi
+      - run:
+          name: Update deployment status - Success
+          command: |
+            echo "📝 Updating deployment status to success..."
+            circleci run release update --status=SUCCESS
+            echo "✅ Deployment marked as successful"
+          when: on_success
+      - run:
+          name: Update deployment status - Failure
+          command: |
+            echo "📝 Updating deployment status to failure..."
+            
+            # Check if validation created a failure reason
+            if [ -f failure_reason.env ]; then
+              source failure_reason.env
+              FAILURE_MSG="$FAILURE_REASON"
+            else
+              FAILURE_MSG="Render deployment failed"
+            fi
+            
+            circleci run release update \
+              --status=FAILED \
+              --failure-reason="$FAILURE_MSG"
+            echo "❌ Deployment marked as failed: $FAILURE_MSG"
+          when: on_fail
 
   # Kubernetes deployment job
   deploy-to-kubernetes:
