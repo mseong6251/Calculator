@@ -188,7 +188,7 @@ jobs:
             sleep 10
             
             # Your Render app URL (update this to your actual URL)
-            APP_URL="https://calculator-app-minjun.onrender.com"
+            APP_URL="https://calculator-app-latest.onrender.com"
             
             # Retry logic - try for up to 3 minutes
             MAX_ATTEMPTS=18
