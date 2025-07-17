@@ -1,0 +1,11 @@
+---
+name: react-tests
+discover: find src -name "*.test.js" -o -name "*.test.jsx"
+run: 
+  command: xargs -r -I {} npm test {} -- --coverage --watchAll=false --reporters=default --reporters=jest-junit --passWithNoTests
+  environment:
+    CI: true
+    JEST_JUNIT_OUTPUT_DIR: test-results
+    JEST_JUNIT_OUTPUT_NAME: jest-junit.xml
+outputs:
+  junit: test-results/jest-junit.xml 

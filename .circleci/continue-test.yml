@@ -124,6 +124,30 @@ jobs:
           path: test-results/eslint
           destination: eslint-xml
 
+  # New optimized test job using CircleCI test optimization feature
+  test-react-functionality-optimized:
+    executor: node-executor
+    parallelism: 4
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "package.json" }}
+      - run:
+          name: Create test results directory
+          command: mkdir -p test-results
+      - run:
+          name: Run React tests with optimization
+          command: |
+            echo "🚀 Running tests with new CircleCI test optimization..."
+            circleci tests run test-suite "react-tests"
+            echo "✅ Optimized React tests completed"
+      - store_test_results:
+          path: test-results
+      - store_artifacts:
+          path: coverage
+          destination: coverage-report
+
   # Docker build and push job
   build-and-push-docker:
     executor: docker-executor
@@ -322,6 +346,10 @@ workflows:
       - test-react-functionality:
           requires:
             - install-dependencies
+      # NEW: Test the optimization feature
+      - test-react-functionality-optimized:
+          requires:
+            - install-dependencies
       - lint-react-code:
           requires:
             - install-dependencies
@@ -330,6 +358,7 @@ workflows:
           requires:
             - test-react-build
             - test-react-functionality
+            - test-react-functionality-optimized  # Include new job in requirements
             - lint-react-code
           filters:
             branches:

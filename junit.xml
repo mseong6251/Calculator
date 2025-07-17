@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="jest tests" tests="17" failures="0" errors="0" time="1.087">
+  <testsuite name="Calculator App" errors="0" failures="0" skipped="0" timestamp="2025-07-16T20:12:28" time="0.578" tests="17">
+    <testcase classname="Calculator App renders calculator title" name="Calculator App renders calculator title" time="0.031">
+    </testcase>
+    <testcase classname="Calculator App renders input fields" name="Calculator App renders input fields" time="0.002">
+    </testcase>
+    <testcase classname="Calculator App renders all operation buttons" name="Calculator App renders all operation buttons" time="0.003">
+    </testcase>
+    <testcase classname="Calculator App renders Clear All and Clear History buttons" name="Calculator App renders Clear All and Clear History buttons" time="0.002">
+    </testcase>
+    <testcase classname="Calculator App shows initial state with no calculation message" name="Calculator App shows initial state with no calculation message" time="0.002">
+    </testcase>
+    <testcase classname="Calculator App performs basic addition" name="Calculator App performs basic addition" time="0.007">
+    </testcase>
+    <testcase classname="Calculator App performs multiplication" name="Calculator App performs multiplication" time="0.003">
+    </testcase>
+    <testcase classname="Calculator App performs power operation" name="Calculator App performs power operation" time="0.002">
+    </testcase>
+    <testcase classname="Calculator App handles division by zero" name="Calculator App handles division by zero" time="0.003">
+    </testcase>
+    <testcase classname="Calculator App handles invalid number input - empty fields" name="Calculator App handles invalid number input - empty fields" time="0.002">
+    </testcase>
+    <testcase classname="Calculator App handles invalid number input - non-numeric values" name="Calculator App handles invalid number input - non-numeric values" time="0.002">
+    </testcase>
+    <testcase classname="Calculator App tracks calculation history" name="Calculator App tracks calculation history" time="0.003">
+    </testcase>
+    <testcase classname="Calculator App shows last result after calculation" name="Calculator App shows last result after calculation" time="0.002">
+    </testcase>
+    <testcase classname="Calculator App tracks multiple calculations in history" name="Calculator App tracks multiple calculations in history" time="0.004">
+    </testcase>
+    <testcase classname="Calculator App clears all data when Clear All is clicked" name="Calculator App clears all data when Clear All is clicked" time="0.003">
+    </testcase>
+    <testcase classname="Calculator App clears only history when Clear History is clicked" name="Calculator App clears only history when Clear History is clicked" time="0.002">
+    </testcase>
+    <testcase classname="Calculator App performs division correctly" name="Calculator App performs division correctly" time="0.002">
+    </testcase>
+  </testsuite>
+</testsuites>
