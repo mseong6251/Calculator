@@ -24,6 +24,9 @@ outputs:
 
 
 #With this implementation, we can create a central queue? Is this already done?
-#what is the different between using outputs vs results key word? If using this, no need to set environment variables for output dir and name?
+
 #how to incorporate test.atoms? This will automatically split into atoms and pipe into run npm command so that no need to use xargs
+
+# turns out I need store_test_results to store the test results in the test-results directory...OH ok <<outputs.junit>> is not completed yet. But it seems like I can still use output.junit.
+#what is the different between using outputs vs results key word? If using this, no need to set environment variables for output dir and name?
 #How to use outputs.junit? How does the output value get dynamically generated? Why is it useful? In case we use parallelism and we need different output files for each test?
