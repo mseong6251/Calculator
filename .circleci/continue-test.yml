@@ -142,11 +142,6 @@ jobs:
             echo "🚀 Running tests with new CircleCI test optimization..."
             circleci tests run test-suite "react-tests"
             echo "✅ Optimized React tests completed"
-      - store_test_results:
-          path: test-results
-      - store_artifacts:
-          path: coverage
-          destination: coverage-report
 
   # Docker build and push job
   build-and-push-docker:
